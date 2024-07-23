@@ -16,9 +16,9 @@ struct ElementData {
     attrs: AttrMap,
 }
 
-type AttrMap = HashMap<String, String>;
+pub type AttrMap = HashMap<String, String>;
 
-fn text(data: String) -> Node {
+pub fn text(data: String) -> Node {
     Node {
         children: Vec::new(),
         node_type: NodeType::Text(data),
