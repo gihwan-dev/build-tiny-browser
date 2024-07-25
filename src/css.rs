@@ -16,8 +16,8 @@ enum Selector {
 
 #[derive(Debug)]
 struct SimpleSelector {
-    tag_name: Option(String),
-    id: Option(String),
+    tag_name: Option<String>,
+    id: Option<String>,
     class: Vec<String>,
 }
 
@@ -32,7 +32,7 @@ enum Value {
     Keyword(String),
     Length(f32, Unit),
     ColorValue(Color),
-    // 더 많의 값 추가
+    // 더 많은 값 추가
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -60,4 +60,73 @@ impl Selector {
         let c = simple.tag_name.iter().count();
         (a, b, c)
     }
+}
+
+impl Value {
+    pub fn to_px(&self) -> f32 {
+        match *self {
+            Value::Length(f, Unit::Px) => f,
+            _ => 0.0,
+        }
+    }
+}
+
+pub fn parse(source: String) -> Stylesheet {
+    let mut parser = Parser {
+        pos: 0,
+        input: source,
+    };
+    Stylesheet {
+        rules: parser.parse_rules(),
+    }
+}
+
+struct Parser {
+    pos: usize,
+    input: String,
+}
+
+impl Parser {
+    fn parse_rules(&mut self) -> Vec<Rule> {
+        let mut rules = Vec::new();
+        loop {
+            self.consume_whitespace();
+            if self.eof() {
+                break;
+            }
+
+            rules.push(self.parse_rule());
+        }
+
+        rules
+    }
+
+    fn eof(&self) -> bool {}
+
+    fn parse_rule(&mut self) -> Rule {
+        Rule {
+            selectors: self.parse_selectors(),
+            declarations: self.parse_declarelations(),
+        }
+    }
+
+    fn parse_selectors(&mut self) -> Vec<Selector> {
+        let mut selectors = Vec::new();
+        loop {
+            selectors.push(Selector::Simple(self.parse_simple_selector()));
+            self.consume_whitespace();
+            match self.next_char() {
+                ',' => {
+                    self.consume_char();
+                    self.consume_whitespace();
+                }
+                '{' => break,
+                c => panic!("Unexpected character {} in selector list", c),
+            }
+            selectors.sort_by_key(|s| s.specificity());
+            selectors
+        }
+    }
+
+    fn consume_whitespace() {}
 }
