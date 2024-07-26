@@ -61,4 +61,18 @@ impl<'a> LayoutBox<'a> {
 }
 
 pub fn layout_tree<'a>(node: &'a StyleNode<'a>, mut containing_block: Dimensions) -> LayoutBox<'a> {
+    containing_block.content.height = 0.0;
+
+    let mut root_box = build_layout_tree(node);
+    root_box.layout(containing_block);
+    root_box
+}
+
+impl LayoutBox<'_> {
+    fn layout(&mut self, containing_block: Dimensions) {
+        match self.box_type {
+            BlockNode(_) => self.layout_block(containing_block),
+            InlineNode(_) | AnonymousBlock => panic!(""),
+        }
+    }
 }
