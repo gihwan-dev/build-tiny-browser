@@ -75,4 +75,55 @@ impl LayoutBox<'_> {
             InlineNode(_) | AnonymousBlock => panic!(""),
         }
     }
+
+    fn layout_block(&mut self, containing_block: Dimensions) {
+        self.calculate_block_width(containing_block);
+
+        self.calculate_block_position(containing_block);
+
+        self.calculate_block_children();
+
+        self.calculate_block_height();
+    }
+
+    fn calculate_block_width(&mut self, containing_block: Dimensions) {
+        let style = self.get_style_node();
+
+        let auto = Keyword("auto".to_string());
+        let mut width = style.value("width").unwrap_or(auto.clone());
+
+        let zero = Length(0.0, Px);
+
+        let mut margin_left = style.lookup("margin-left", "margin", &zero);
+        let mut margin_right = style.lookup("margin-right", "margin", &zero);
+
+        let border_left = style.lookup("border-left-width", "border-width", &zero);
+        let border_right = style.lookup("border-right-width", "border-width", &zero);
+
+        let padding_left = style.lookup("padding-left", "padding", &zero);
+        let padding_right = style.lookup("padding-right", "padding", &zero);
+
+        let total = sum([
+            &margin_left,
+            &margin_right,
+            &border_left,
+            &border_right,
+            &padding_left,
+            &padding_right,
+            &width,
+        ]
+        .iter()
+        .map(|v| v.to_px()));
+
+        if width != auto && total > containing_block.content.width {
+            if margin_left == auto {
+                margin_left = Length(0.0, Px);
+            }
+
+            if margin_right == auto {
+                margin_right = Length(0.0 Px);
+            }
+        }
+        let underflow = containing_block.content.width - total;
+     }
 }
