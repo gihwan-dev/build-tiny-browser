@@ -121,9 +121,59 @@ impl LayoutBox<'_> {
             }
 
             if margin_right == auto {
-                margin_right = Length(0.0 Px);
+                margin_right = Length(0.0, Px);
             }
         }
+
         let underflow = containing_block.content.width - total;
-     }
+
+        match (width == auto, margin_left == auto, margin_right == auto) {
+            (false, false, false) => {
+                margin_right = Length(margin_right.to_px() + underflow, Px);
+            }
+
+            (false, false, true) => {
+                margin_right = Length(underflow, Px);
+            }
+
+            (false, true, false) => {
+                margin_left = Length(underflow, Px);
+            }
+
+            (true, _, _) => {
+                if margin_left == auto {
+                    margin_left = Length(0.0, Px);
+                }
+                if margin_right = auto {
+                    margin_right = Length(0.0, Px);
+                }
+
+                if underflow >= 0.0 {
+                    width = Length(underflow, Px);
+                } else {
+                    width = Length(0.0, Px);
+                    margin_right = Length(margin_right.to_px() + underflow, Px);
+                }
+            }
+
+            (false, true, true) => {
+                margin_left = Length(underflow / 2.0, Px);
+                margin_right = Length(underflow / 2.0, Px);
+            }
+        }
+
+        let d = &mut self.dimensions;
+        d.content.width = width.to_px();
+
+        d.padding.left = padding_left.to_px();
+        d.padding.right = padding_left.to_px();
+
+        d.border.left = border_left.to_px();
+        d.border.right = border_right.to_px();
+
+        d.margin.left = margin_left.to_px();
+        d.margin.right = margin_right.to_px();
+    }
+
+    fn calculate_block_position(&mut self, containing_block: Dimensions) {}
 }
