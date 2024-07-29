@@ -28,7 +28,7 @@ struct Declaration {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum Value {
+pub enum Value {
     Keyword(String),
     Length(f32, Unit),
     ColorValue(Color),
@@ -36,7 +36,7 @@ enum Value {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum Unit {
+pub enum Unit {
     Px,
 }
 

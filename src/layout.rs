@@ -39,7 +39,7 @@ pub struct LayoutBox<'a> {
 
 pub enum BoxType<'a> {
     BlockNode(&'a StyleNode<'a>),
-    InlineNode(&'a StyledNode<'a>),
+    InlineNode(&'a StyleNode<'a>),
     AnonymousBlock,
 }
 
@@ -220,13 +220,48 @@ impl LayoutBox<'_> {
     fn get_inline_container(&mut self) -> &mut Self {
         match self.box_type {
             InlineNode(_) | AnonymousBlock => self,
-            BlockNode(_) => match self.children.last() {
-                Some(&LayoutBox {
-                    box_type: AnonymousBlock,
-                    ..
-                }) => {}
-                _ => self.children.push(LayoutBox::new(AnonymousBlock)),
-            },
+            BlockNode(_) => {
+                match self.children.last() {
+                    Some(&LayoutBox {
+                        box_type: AnonymousBlock,
+                        ..
+                    }) => {}
+                    _ => self.children.push(LayoutBox::new(AnonymousBlock)),
+                }
+                self.children.last_mut().unwrap()
+            }
         }
     }
+}
+
+impl Rect {
+    pub fn expanded_by(self, edge: EdgeSizes) -> Rect {
+        Rect {
+            x: self.x - edge.left,
+            y: self.y - edge.top,
+            width: self.width + edge.left + edge.right,
+            height: self.height + edge.top + edge.bottom,
+        }
+    }
+}
+
+impl Dimensions {
+    pub fn padding_box(self) -> Rect {
+        self.content.expanded_by(self.padding)
+    }
+
+    pub fn border_box(self) -> Rect {
+        self.padding_box().expanded_by(self.border)
+    }
+
+    pub fn margin_box(self) -> Rect {
+        self.border_box().expanded_by(self.margin)
+    }
+}
+
+fn sum<I>(iter: I) -> f32
+where
+    I: Iterator<Item = f32>,
+{
+    iter.fold(0., |a, b| a + b)
 }
