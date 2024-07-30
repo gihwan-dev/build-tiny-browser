@@ -41,7 +41,7 @@ pub enum Unit {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct Color {
+pub struct Color {
     r: u8,
     g: u8,
     b: u8,
